@@ -1,0 +1,33 @@
+version: "3.7"
+
+services:
+
+  postgres:
+    image: postgres:latest
+    init: true
+    restart: always
+
+    expose:
+      - 5432
+
+    volumes:
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  holiday-hackathon-bot:
+    container_name: holiday-hackathon-bot
+    init: true
+    restart: always
+
+    depends_on:
+      - postgres
+
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    volumes:
+      - ./logs:/holiday-hackathon-bot/logs:rw
+      - .:/holiday-hackathon-bot:ro
+
+    ports:
+      - "5005:5000"

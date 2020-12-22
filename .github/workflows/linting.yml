@@ -1,0 +1,29 @@
+name: Linting
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checks out repository so workflows can access it
+        uses: actions/checkout@v2
+
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Lint with black
+        uses: psf/black@stable
+
+      - name: Install dependencies
+        run: |
+          pip install pipenv
+          pipenv install --dev --deploy --system
+
+      - name: Lint with flake8
+        run: |
+          flake8 ./
