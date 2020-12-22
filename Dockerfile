@@ -13,7 +13,7 @@ ENV PIP_NO_CACHE_DIR=false \
 RUN pip install -U pipenv
 
 # Create the working directory
-WORKDIR /xythrion
+WORKDIR /holiday-hackathon-bot
 
 # Install packages
 COPY Pipfile* ./

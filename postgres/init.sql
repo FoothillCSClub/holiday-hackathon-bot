@@ -1,4 +1,4 @@
-CREATE DATABASE holiday_hackathon;
+-- CREATE DATABASE holiday_hackathon;
 
 \c holiday_hackathon;
 
