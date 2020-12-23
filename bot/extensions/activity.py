@@ -45,8 +45,7 @@ class Activity(commands.Cog):
         filename = self.render_top_image(page, members)
 
         embed = discord.Embed(
-            title='Activity Challenge',
-            color=discord.Color.from_rgb(161, 219, 236)
+            title='Activity Challenge', color=discord.Color.from_rgb(161, 219, 236)
         )
         embed.set_footer(text=now.strftime('Updated at %b %d, %I:%M %p PST'))
         embed.set_image(url=f'attachment://{filename.split("/")[-1]}')
@@ -61,15 +60,16 @@ class Activity(commands.Cog):
 
         return [
             RankedMember(
-                rank=((page-1) * 10) + i + 1,
+                rank=((page - 1) * 10) + i + 1,
                 username=hacker[0].name,
                 display_name=hacker[0].display_name,
                 score=hacker[1],
-            ) for i, hacker in enumerate(
+            )
+            for i, hacker in enumerate(
                 sorted(
-                    hackers[(page-1)*10:page*10],
+                    hackers[(page - 1) * 10 : page * 10],
                     key=lambda data: data[1],
-                    reverse=True
+                    reverse=True,
                 )
             )
         ]
@@ -94,7 +94,7 @@ class Activity(commands.Cog):
             # Draw bounding rectangle
             draw.rectangle(
                 [(box_padding, y), (width - box_padding, y + box_height)],
-                fill=(73, 76, 81)
+                fill=(73, 76, 81),
             )
 
             content_y = y + content_offset_y

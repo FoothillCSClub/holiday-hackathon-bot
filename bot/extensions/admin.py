@@ -28,7 +28,7 @@ class Admin(commands.Cog):
         await self.bot.change_presence(
             activity=discord.Activity(
                 type=discord.ActivityType.playing,
-                name="https://holiday.foothillcs.club"
+                name="https://holiday.foothillcs.club",
             )
         )
 
@@ -39,7 +39,9 @@ class Admin(commands.Cog):
     async def on_command_error(self, ctx, error):
         # TODO: properly handle the full range of errors
         await ctx.send('Well, we hit an error.')
-        traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
+        traceback.print_exception(
+            type(error), error, error.__traceback__, file=sys.stderr
+        )
 
     @commands.command(aliases=['r'])
     async def reload(self, ctx, ext_name: str = ''):
