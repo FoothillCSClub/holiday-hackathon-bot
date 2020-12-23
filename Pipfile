@@ -29,8 +29,6 @@ python_version = "3.8.6"
 start = "python -m bot"
 lint = "pre-commit run --all-files"
 precommit = "pre-commit install"
-black = "black --check ."
-flake8 = "python -m flake8"
 
 [pipenv]
 allow_prereleases = true

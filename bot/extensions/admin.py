@@ -33,7 +33,9 @@ class Admin(commands.Cog):
         )
 
     # async def before_invoke(self, ctx):
-    #     print(f'[command] "{ctx.author}" invoked "{ctx.command.name}" with "{ctx.message.content}"')
+    #     print(
+    #         f'[command] "{ctx.author}" invoked "{ctx.command.name}" with "{ctx.message.content}"'
+    #     )
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):

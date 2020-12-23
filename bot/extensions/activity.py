@@ -1,5 +1,5 @@
 """
-Extension for Activity Challenge 
+Extension for Activity Challenge
 """
 
 from os import getenv
