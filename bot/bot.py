@@ -7,7 +7,7 @@ intents = Intents.default()
 intents.members = True
 
 prefixes = ('hack ', 'Hack ')
-extensions = ['admin', 'activity', 'data']
+extensions = ['admin', 'activity', 'data', 'event']
 
 
 def start_bot():

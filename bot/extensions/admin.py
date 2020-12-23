@@ -40,10 +40,13 @@ class Admin(commands.Cog):
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
         # TODO: properly handle the full range of errors
-        await ctx.send('Well, we hit an error.')
-        traceback.print_exception(
-            type(error), error, error.__traceback__, file=sys.stderr
-        )
+        if isinstance(error, commands.CommandNotFound):
+            await ctx.send('Command not found!')
+        else:
+            await ctx.send('Well, we hit an error.')
+            traceback.print_exception(
+                type(error), error, error.__traceback__, file=sys.stderr
+            )
 
     @commands.command(aliases=['r'])
     async def reload(self, ctx, ext_name: str = ''):
@@ -53,6 +56,7 @@ class Admin(commands.Cog):
 
         try:
             self.bot.reload_extension(f'bot.extensions.{ext_name}')
+            print(f'[bot] extension "{ext_name}" reloaded')
             await ctx.send('Reloaded!')
         except commands.errors.ExtensionNotLoaded:
             await ctx.send('Extension not loaded')
