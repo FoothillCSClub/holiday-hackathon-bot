@@ -15,7 +15,7 @@ services:
 
     volumes:
       - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
-      - ./postgres_data/:/var/lib/postgresql/data/
+      # - ./postgres_data/:/var/lib/postgresql/data/
 
   holiday-hackathon-bot:
     container_name: holiday-hackathon-bot
@@ -33,7 +33,7 @@ services:
       dockerfile: Dockerfile
 
     volumes:
-      - ./logs:/holiday-hackathon-bot/logs:rw
+      # - ./logs:/holiday-hackathon-bot/logs:rw
       - .:/holiday-hackathon-bot:ro
 
     ports:

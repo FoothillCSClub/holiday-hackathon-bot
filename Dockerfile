@@ -7,7 +7,9 @@ STOPSIGNAL SIGQUIT
 ENV PIP_NO_CACHE_DIR=false \
     PIPENV_HIDE_EMOJIS=1 \
     PIPENV_IGNORE_VIRTUALENVS=1 \
-    PIPENV_NOSPIN=1
+    PIPENV_NOSPIN=1 \
+    PYTHONUNBUFFERED=1 \
+    BOT_OUTPUT_DIR=/tmp/output
 
 # Install pipenv
 RUN pip install -U pipenv
