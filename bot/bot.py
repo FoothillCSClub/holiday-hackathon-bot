@@ -59,6 +59,7 @@ class HolidayBot(Bot):
 
     def is_mod(self) -> Callable:
         """Create a mod-checking discord command check."""
+
         async def predicate(ctx: Context) -> bool:
             """Check if the user is a mod in the event host guild."""
             host_guild = self.get_host_guild()
