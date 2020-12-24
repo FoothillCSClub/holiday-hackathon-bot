@@ -1,6 +1,4 @@
--- CREATE DATABASE holiday_hackathon;
-
-\c holiday;
+\c holiday_hackathon;
 
 CREATE TABLE IF NOT EXISTS Users(
     id serial PRIMARY KEY,
