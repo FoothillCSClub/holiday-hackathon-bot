@@ -4,11 +4,8 @@ from pathlib import Path
 from typing import List
 
 import aiohttp
-from discord import Activity, ActivityType
 from discord.ext.commands import Bot
 from loguru import logger
-
-PRESENCE_URL = "https://holiday.foothillcs.club"
 
 
 class HolidayBot(Bot):
@@ -20,10 +17,9 @@ class HolidayBot(Bot):
         self.loop = asyncio.get_event_loop()
         self.http_session = aiohttp.ClientSession()
 
-    async def on_ready(self) -> None:
+    @staticmethod
+    async def on_ready() -> None:
         """Updates the console when the bot is ready to use."""
-        await self.change_presence(activity=Activity(type=ActivityType.playing, name=PRESENCE_URL))
-
         logger.info("Awaiting...")
 
     async def logout(self) -> None:

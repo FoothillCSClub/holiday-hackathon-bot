@@ -1,12 +1,11 @@
-import os
 from typing import Optional
 
+from discord import Activity, ActivityType
 from discord.ext.commands import Cog, Context, command, errors
 from loguru import logger
 
 from bot.bot import HolidayBot
-
-DEVS = [int(elem.strip()) for elem in os.environ.get("BOT_DEVS").split(",")]
+from data import Data
 
 
 class Admin(Cog):
@@ -14,11 +13,14 @@ class Admin(Cog):
 
     def __init__(self, bot: HolidayBot) -> None:
         self.bot = bot
-        # self.bot.before_invoke(self.before_invoke)
+
+    async def on_ready(self) -> None:
+        """Changes presence when the bot is ready to be used."""
+        await self.bot.change_presence(activity=Activity(type=ActivityType.playing, name=Data.PRESENCE_URL))
 
     def cog_check(self, ctx: Context) -> bool:
         """Checks if the user is a developer before letting them use the commands in this cog."""
-        return ctx.author.id in DEVS
+        return ctx.author.id in Data.DEVS
 
     @command(aliases=("r",))
     async def reload(self, ctx: Context, ext_name: Optional[str]) -> None:
