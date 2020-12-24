@@ -1,68 +1,45 @@
-"""
-Extension for Admin Utilities
-"""
+from typing import Optional
 
-import os
-import sys
-import time
-import traceback
+from discord import Activity, ActivityType
+from discord.ext.commands import Cog, Context, command, errors
+from loguru import logger
 
-import discord
-from discord.ext import commands
+from bot.bot import HolidayBot
 
 
-class Admin(commands.Cog):
-    def __init__(self, bot: commands.Bot):
+class Admin(Cog):
+    """Admin utilities cog."""
+
+    def __init__(self, bot: HolidayBot) -> None:
         self.bot = bot
-        # self.bot.before_invoke(self.before_invoke)
 
-    def get_data(self):
-        return self.bot.get_cog('Data')
-
-    def cog_check(self, ctx):
-        return ctx.author.id in self.get_data().DEVS
-
-    @commands.Cog.listener()
-    async def on_ready(self):
-        print(f'[bot] We have logged in as {self.bot.user}')
+    async def on_ready(self) -> None:
+        """Changes presence when the bot is ready to be used."""
         await self.bot.change_presence(
-            activity=discord.Activity(
-                type=discord.ActivityType.playing,
-                name="https://holiday.foothillcs.club",
-            )
+            activity=Activity(type=ActivityType.playing, name=self.bot.get_data().PRESENCE_TEXT)
         )
 
-    # async def before_invoke(self, ctx):
-    #     print(
-    #         f'[command] "{ctx.author}" invoked "{ctx.command.name}" with "{ctx.message.content}"'
-    #     )
+    def cog_check(self, ctx: Context) -> bool:
+        """Checks if the user is a developer before letting them use the commands in this cog."""
+        return ctx.author.id in self.bot.get_data().DEVS
 
-    @commands.Cog.listener()
-    async def on_command_error(self, ctx, error):
-        # TODO: properly handle the full range of errors
-        if isinstance(error, commands.CommandNotFound):
-            await ctx.send('Command not found!')
-        else:
-            await ctx.send('Well, we hit an error.')
-            traceback.print_exception(
-                type(error), error, error.__traceback__, file=sys.stderr
-            )
+    @command(aliases=("r",))
+    async def reload(self, ctx: Context, ext_name: Optional[str]) -> None:
+        """Reloads cog(s)."""
+        for extension in set([f"bot.extensions.{ext_name}"] if ext_name else self.bot.get_extensions()):
+            try:
+                self.bot.reload_extension(extension)
+                logger.info(f"Reloaded {extension}.")
 
-    @commands.command(aliases=['r'])
-    async def reload(self, ctx, ext_name: str = ''):
-        if not ext_name:
-            await ctx.send('No extension name specified')
-            return
+            except errors.ExtensionNotLoaded:
+                self.bot.load_extension(extension)
+                logger.info(f"Loaded {extension}.")
 
-        try:
-            self.bot.reload_extension(f'bot.extensions.{ext_name}')
-            print(f'[bot] extension "{ext_name}" reloaded')
-            await ctx.send('Reloaded!')
-        except commands.errors.ExtensionNotLoaded:
-            await ctx.send('Extension not loaded')
+        await ctx.send(
+            f"Extension '{ext_name}' was reloaded." if ext_name else "All extensions were reloaded."
+        )
 
 
-def setup(bot):
-    os.environ['TZ'] = 'America/Los_Angeles'
-    time.tzset()
+def setup(bot: HolidayBot) -> None:
+    """The necessary function for loading the Admin cog."""
     bot.add_cog(Admin(bot))

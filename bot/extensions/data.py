@@ -1,22 +1,20 @@
-"""
-Cog for sharing data across bot
+import os
 
-Usage: self.bot.get_cog('Data')
-"""
+from discord.ext.commands import Cog
 
-from os import getenv
-
-from discord.ext import commands
+from bot.bot import HolidayBot
 
 
-class Data(commands.Cog):
+class Data(Cog):
     # TODO: graceful exception handling?
-    DEVS = [int(elem.strip()) for elem in getenv('BOT_DEVS').split(',')]
-    HOST_GUILD = int(getenv('BOT_HOST_GUILD'))
-    WEBSITE_URL = 'https://holiday.foothillcs.club'
-    WEBSITE_SCHEDULE_URL = 'https://holiday.foothillcs.club#schedule'
-    API_SCHEDULE_URL = 'https://holiday.foothillcs.club/api/schedule.json'
+    DEVS = [int(elem.strip()) for elem in os.environ.get("BOT_DEVS").split(",")]
+    HOST_GUILD = int(os.environ.get("BOT_HOST_GUILD"))
+    PRESENCE_TEXT = "https://holiday.foothillcs.club"
+    WEBSITE_URL = "https://holiday.foothillcs.club"
+    WEBSITE_SCHEDULE_URL = "https://holiday.foothillcs.club#schedule"
+    API_SCHEDULE_URL = "https://holiday.foothillcs.club/api/schedule.json"
 
 
-def setup(bot):
-    bot.add_cog(Data())
+def setup(bot: HolidayBot) -> None:
+    """The necessary function for loading the Data cog."""
+    bot.add_cog(Data(bot))

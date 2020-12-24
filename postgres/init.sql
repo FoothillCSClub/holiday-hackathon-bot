@@ -1,5 +1,3 @@
--- CREATE DATABASE holiday_hackathon;
-
 \c holiday_hackathon;
 
 CREATE TABLE IF NOT EXISTS Users(
