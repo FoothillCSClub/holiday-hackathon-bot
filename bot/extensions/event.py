@@ -5,7 +5,6 @@ from discord.ext import tasks
 from discord.ext.commands import Cog, Context, command
 
 from bot.bot import HolidayBot
-from data import Data
 
 
 class Event(Cog):
@@ -31,11 +30,11 @@ class Event(Cog):
         embed = discord.Embed(
             title="Event Schedule",
             color=discord.Color.from_rgb(161, 219, 236),
-            url=Data.WEBSITE_SCHEDULE_URL,
+            url=self.bot.get_data().WEBSITE_SCHEDULE_URL,
         )
 
         formatted_time = self.update_time.strftime("Updated at %b %d, %I:%M %p PST")
-        embed.set_footer(text=f"{formatted_time} | More at {Data.WEBSITE_URL}")
+        embed.set_footer(text=f"{formatted_time} | More at {self.bot.get_data().WEBSITE_URL}")
 
         for day_info in self.event_data["schedule"]:
             events_text = ""
@@ -52,7 +51,7 @@ class Event(Cog):
     @tasks.loop(seconds=60.0)
     async def fetch_schedule(self) -> None:
         """Fetches the schedule from the hackathon website."""
-        async with self.bot.http_session.get(Data.API_SCHEDULE_URL) as response:
+        async with self.bot.http_session.get(self.bot.get_data().API_SCHEDULE_URL) as response:
             if response.status == 200:
                 self.update_time = datetime.now()
                 self.event_data = await response.json()

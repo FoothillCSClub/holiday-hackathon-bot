@@ -5,7 +5,6 @@ from discord.ext.commands import Cog, Context, command, errors
 from loguru import logger
 
 from bot.bot import HolidayBot
-from data import Data
 
 
 class Admin(Cog):
@@ -16,16 +15,18 @@ class Admin(Cog):
 
     async def on_ready(self) -> None:
         """Changes presence when the bot is ready to be used."""
-        await self.bot.change_presence(activity=Activity(type=ActivityType.playing, name=Data.PRESENCE_URL))
+        await self.bot.change_presence(
+            activity=Activity(type=ActivityType.playing, name=self.bot.get_data().PRESENCE_TEXT)
+        )
 
     def cog_check(self, ctx: Context) -> bool:
         """Checks if the user is a developer before letting them use the commands in this cog."""
-        return ctx.author.id in Data.DEVS
+        return ctx.author.id in self.bot.get_data().DEVS
 
     @command(aliases=("r",))
     async def reload(self, ctx: Context, ext_name: Optional[str]) -> None:
         """Reloads cog(s)."""
-        for extension in set(self.bot.get_extensions() or ext_name):
+        for extension in set([f"bot.extensions.{ext_name}"] if ext_name else self.bot.get_extensions()):
             try:
                 self.bot.reload_extension(extension)
                 logger.info(f"Reloaded {extension}.")
@@ -34,7 +35,9 @@ class Admin(Cog):
                 self.bot.load_extension(extension)
                 logger.info(f"Loaded {extension}.")
 
-        await ctx.send("Extensions are done (re)loading.")
+        await ctx.send(
+            f"Extension '{ext_name}' was reloaded." if ext_name else "All extensions were reloaded."
+        )
 
 
 def setup(bot: HolidayBot) -> None:

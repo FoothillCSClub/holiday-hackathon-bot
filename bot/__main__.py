@@ -1,5 +1,5 @@
 import time
-from os import environ
+from os import environ, getenv
 
 from discord import Intents
 from loguru import logger
@@ -13,7 +13,7 @@ intents = Intents.default()
 intents.members = True
 
 bot = HolidayBot(
-    command_prefix="hack ",
+    command_prefix=getenv("BOT_PREFIX", default="hack "),
     case_insensitive=False,
     intents=intents,
 )

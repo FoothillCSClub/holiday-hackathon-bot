@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import List
 
 import aiohttp
-from discord.ext.commands import Bot
+from discord.ext.commands import Bot, Cog
 from loguru import logger
 
 
@@ -16,6 +16,10 @@ class HolidayBot(Bot):
 
         self.loop = asyncio.get_event_loop()
         self.http_session = aiohttp.ClientSession()
+
+    def get_data(self) -> Cog:
+        """Get the data cog."""
+        return self.get_cog("Data")
 
     @staticmethod
     async def on_ready() -> None:

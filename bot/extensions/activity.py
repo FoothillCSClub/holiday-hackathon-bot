@@ -11,8 +11,6 @@ from discord.ext.commands import Cog, Context, command
 
 from bot.bot import HolidayBot
 
-from data import Data
-
 REGULAR = ImageFont.truetype("assets/fonts/Nunito/Nunito-Regular.ttf", 24)
 BOLD = ImageFont.truetype("assets/fonts/Nunito/Nunito-Bold.ttf", 24)
 EXTRABOLD = ImageFont.truetype("assets/fonts/Nunito/Nunito-ExtraBold.ttf", 24)
@@ -53,7 +51,7 @@ class Activity(Cog):
     def get_top_members(self, page: int) -> List[RankedMember]:
         """Gets the top members from the leaderboard."""
         # TODO: cleanup method
-        guild = self.bot.get_guild(Data.HOST_GUILD)
+        guild = self.bot.get_guild(self.bot.get_data().HOST_GUILD)
         role = next((role for role in guild.roles if role.name == "hacker"))
         hackers = [(hacker, randint(0, 200)) for hacker in role.members]
 
