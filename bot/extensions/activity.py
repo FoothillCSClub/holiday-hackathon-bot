@@ -67,10 +67,8 @@ class Activity(Cog):
         guild = self.bot.get_host_guild()
         role = next((role for role in guild.roles if role.name == "hacker"))
 
-        # Take a connection from the pool.
         async with self.bot.pg_pool.acquire() as conn:
             async with conn.transaction():
-                # Run the query passing the request argument.
                 await conn.execute("DELETE FROM Users")
 
                 for member in role.members:
