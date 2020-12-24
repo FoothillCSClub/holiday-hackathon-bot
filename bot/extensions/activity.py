@@ -65,7 +65,7 @@ class Activity(Cog):
 
     @command()
     async def redeem(self, ctx: Context, code: str) -> None:
-        """Give or take a certain number of points from a user."""
+        """Redeem an activity code for points."""
         if ctx.guild is not None:
             await ctx.message.delete()
             await ctx.send(
@@ -162,14 +162,14 @@ class Activity(Cog):
         users = await self.populate_db(fill_random)
 
         text = "Registered & reset: " + " ".join([f"<@{user['user_id']}>" for user in users])
-        text += "\nPopulated random scores" if fill_random else "\nSet all scores to 0\n"
+        text += "\nPopulated random scores" if fill_random else "\nSet all scores to 0"
         embed = discord.Embed(title="Hackers", description=text)
 
         await ctx.send(embed=embed)
 
     @command()
     async def codes(self, ctx: Context) -> None:
-        """List all codes."""
+        """List all activity codes."""
         async with self.bot.pg_pool.acquire() as conn:
             async with conn.transaction():
                 codes = await conn.fetch("SELECT code, title, points FROM Codes")
@@ -184,7 +184,7 @@ class Activity(Cog):
 
     @loop(count=1)
     async def populate_codes(self) -> None:
-        """Populate special codes."""
+        """Populate activity codes into the database."""
         async with self.bot.pg_pool.acquire() as conn:
             with open(self.bot.get_data().ACTIVITY_CODES_CSV, newline="") as csvfile:
                 data = [
