@@ -1,61 +1,60 @@
-"""
-Extension for Activity Challenge
-"""
-
-from os import getenv
-from typing import List
-from datetime import datetime
-from random import randint
 from dataclasses import dataclass
+from datetime import datetime
+from os import environ
 from pathlib import Path
+from random import randint
+from typing import List
 
 import discord
-from discord.ext import commands
-from PIL import Image, ImageFont, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
+from discord.ext.commands import Cog, Context, command
 
+from bot.bot import HolidayBot
 
-class Font:
-    regular = ImageFont.truetype('assets/fonts/Nunito/Nunito-Regular.ttf', 24)
-    bold = ImageFont.truetype('assets/fonts/Nunito/Nunito-Bold.ttf', 24)
-    extrabold = ImageFont.truetype('assets/fonts/Nunito/Nunito-ExtraBold.ttf', 24)
+HOST_GUILD = int(environ.get("BOT_HOST_GUILD"))
+
+REGULAR = ImageFont.truetype("assets/fonts/Nunito/Nunito-Regular.ttf", 24)
+BOLD = ImageFont.truetype("assets/fonts/Nunito/Nunito-Bold.ttf", 24)
+EXTRABOLD = ImageFont.truetype("assets/fonts/Nunito/Nunito-ExtraBold.ttf", 24)
 
 
 @dataclass
 class RankedMember:
+    """A dataclass for a player in the hackathon leaderboard."""
+
     rank: int
     username: str
     display_name: str
     score: int
 
 
-class Activity(commands.Cog):
-    def __init__(self, bot):
+class Activity(Cog):
+    """Extension for Activity Challenge."""
+
+    def __init__(self, bot: HolidayBot) -> None:
         self.bot = bot
-        self.outdir = getenv('BOT_OUTPUT_DIR') or 'output'
+        self.outdir = environ.get("BOT_OUTPUT_DIR") or "output"
 
         Path(self.outdir).mkdir(parents=True, exist_ok=True)
 
-    def get_data(self):
-        return self.bot.get_cog('Data')
-
-    @commands.command()
-    async def top(self, ctx, page: int = 1):
+    @command()
+    async def top(self, ctx: Context, page: int = 1) -> None:
+        """Renders a leaderboard of all the top points of players."""
         now = datetime.now()
         members = self.get_top_members(page)
         filename = self.render_top_image(page, members)
 
-        embed = discord.Embed(
-            title='Activity Challenge', color=discord.Color.from_rgb(161, 219, 236)
-        )
-        embed.set_footer(text=now.strftime('Updated at %b %d, %I:%M %p PST'))
+        embed = discord.Embed(title="Activity Challenge", color=discord.Color.from_rgb(161, 219, 236))
+        embed.set_footer(text=now.strftime("Updated at %b %d, %I:%M %p PST"))
         embed.set_image(url=f'attachment://{filename.split("/")[-1]}')
 
         await ctx.send(embed=embed, file=discord.File(filename))
 
     def get_top_members(self, page: int) -> List[RankedMember]:
+        """Gets the top members from the leaderboard."""
         # TODO: cleanup method
-        guild = self.bot.get_guild(self.get_data().HOST_GUILD)
-        role = next((role for role in guild.roles if role.name == 'hacker'))
+        guild = self.bot.get_guild(HOST_GUILD)
+        role = next((role for role in guild.roles if role.name == "hacker"))
         hackers = [(hacker, randint(0, 200)) for hacker in role.members]
 
         return [
@@ -75,11 +74,12 @@ class Activity(commands.Cog):
         ]
 
     def render_top_image(self, page: int, members: List[RankedMember]) -> str:
+        """Renders the top image."""
         height = 600
         width = 580
-        outfile = f'{self.outdir}/activity_top_{page}.png'
+        outfile = f"{self.outdir}/activity_top_{page}.png"
 
-        image = Image.new(mode='RGBA', size=(height, width), color=(0, 0, 0, 0))
+        image = Image.new(mode="RGBA", size=(height, width), color=(0, 0, 0, 0))
         draw = ImageDraw.Draw(image)
 
         step_size = int(image.height / 10)
@@ -102,14 +102,14 @@ class Activity(commands.Cog):
             # Show rank number: '#' then '24'
             draw.text(
                 (content_padding, content_y),
-                '#',
-                font=Font.bold,
+                "#",
+                font=BOLD,
                 fill=(200, 200, 200),
             )
             draw.text(
                 (content_padding + 18, content_y),
                 str(person.rank),
-                font=Font.bold,
+                font=BOLD,
                 fill=(200, 200, 200),
             )
 
@@ -118,28 +118,28 @@ class Activity(commands.Cog):
             draw.text(
                 (name_x, content_y),
                 person.display_name,
-                font=Font.extrabold,
+                font=EXTRABOLD,
             )
 
             # Show username, if different from display name
             if person.username != person.display_name:
                 length = draw.textlength(
                     person.display_name,
-                    font=Font.extrabold,
+                    font=EXTRABOLD,
                 )
                 draw.text(
                     (name_x + length + 8, content_y),
-                    f'@{person.username}',
-                    font=Font.regular,
+                    f"@{person.username}",
+                    font=REGULAR,
                 )
 
             # Show score, right aligned
             draw.text(
                 (width - content_padding, content_y),
                 str(person.score),
-                font=Font.bold,
+                font=BOLD,
                 fill=(118, 181, 214),
-                anchor='ra',
+                anchor="ra",
             )
 
             y += step_size
@@ -153,5 +153,6 @@ class Activity(commands.Cog):
         return outfile
 
 
-def setup(bot):
+def setup(bot: HolidayBot) -> None:
+    """The necessary function for loading the Activity cog."""
     bot.add_cog(Activity(bot))
