@@ -2,27 +2,27 @@ version: "3.7"
 
 services:
 
-#  postgres:
-#    image: postgres:latest
-#    init: true
-#    restart: always
-#
-#    env_file:
-#      - .env
-#
-#    expose:
-#      - 5432
-#
-#    volumes:
-#      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+  postgres:
+    image: postgres:latest
+    init: true
+    restart: always
+
+    env_file:
+      - .env
+
+    expose:
+      - 5432
+
+    volumes:
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   holiday-hackathon-bot:
     container_name: holiday-hackathon-bot
     init: true
     restart: always
 
-#    depends_on:
-#      - postgres
+    depends_on:
+      - postgres
 
     env_file:
       - .env
