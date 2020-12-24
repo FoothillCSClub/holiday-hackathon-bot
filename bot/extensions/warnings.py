@@ -40,7 +40,7 @@ class Warnings(Cog):
             msg = "Bot does not have enough permissions for this command."
 
         elif isinstance(e, commands.CommandNotFound):
-            msg = f"Command not found! Use `{ctx.prefix}hack help` to list all available commands."
+            msg = f"Command not found! Use `{ctx.prefix}help` to list all available commands."
 
         else:
             msg = f"{type(e).__name__}: {e}"
