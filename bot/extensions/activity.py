@@ -4,11 +4,13 @@ from os import environ
 from pathlib import Path
 from random import randint
 from typing import List
+from csv import reader
 
 import discord
 from asyncpg import Record
 from PIL import Image, ImageDraw, ImageFont
 from discord.ext.commands import Cog, Context, Greedy, check, command
+from discord.ext.tasks import loop
 
 from bot.bot import HolidayBot
 
@@ -38,8 +40,15 @@ class Activity(Cog):
         self.registerall = check(self.bot.is_mod())(self.registerall)
         self.give = check(self.bot.is_mod())(self.give)
         self.take = check(self.bot.is_mod())(self.take)
+        self.codes = check(self.bot.is_mod())(self.codes)
+
+        self.populate_codes.start()
 
         Path(self.outdir).mkdir(parents=True, exist_ok=True)
+
+    def cog_unload(self) -> None:
+        """On cog unload, stop tasks as necessary."""
+        self.populate_codes.stop()
 
     @command()
     async def top(self, ctx: Context, page: int = 1) -> None:
@@ -110,6 +119,34 @@ class Activity(Cog):
         embed = discord.Embed(title="Hackers", description=text)
 
         await ctx.send(embed=embed)
+
+    @command()
+    async def codes(self, ctx: Context) -> None:
+        """List all codes."""
+        async with self.bot.pg_pool.acquire() as conn:
+            async with conn.transaction():
+                codes = await conn.fetch("SELECT code, title, points FROM Codes")
+
+        embed = discord.Embed(
+            title="Activity Codes",
+            description="\n".join([f"`{code}` {title} - {points}" for code, title, points in codes]),
+            color=discord.Color.from_rgb(161, 219, 236),
+        )
+
+        await ctx.author.send(embed=embed)
+
+    @loop(count=1)
+    async def populate_codes(self) -> None:
+        """Populate special codes."""
+        async with self.bot.pg_pool.acquire() as conn:
+            with open(self.bot.get_data().ACTIVITY_CODES_CSV, newline="") as csvfile:
+                data = [
+                    (item[0], item[1], int(item[2])) for item in reader(csvfile, delimiter=",", quotechar="|")
+                ]
+
+            async with conn.transaction():
+                await conn.execute("DELETE FROM Codes")
+                await conn.executemany("INSERT INTO Codes (code, title, points) VALUES ($1, $2, $3)", data)
 
     async def populate_db(self, fill_random: bool) -> List[Record]:
         """Reset & populate the postgres Users table with @hacker members + random scores."""
