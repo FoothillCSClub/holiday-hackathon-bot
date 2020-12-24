@@ -37,7 +37,7 @@ class Activity(Cog):
         self.outdir = environ.get("BOT_OUTPUT_DIR") or "output"
 
         # Decorate mod methods without a decorator
-        self.registerall = check(self.bot.is_mod())(self.registerall)
+        self.register_all = check(self.bot.is_mod())(self.register_all)
         self.give = check(self.bot.is_mod())(self.give)
         self.take = check(self.bot.is_mod())(self.take)
         self.codes = check(self.bot.is_mod())(self.codes)
@@ -50,8 +50,8 @@ class Activity(Cog):
         """On cog unload, stop tasks as necessary."""
         self.populate_codes.stop()
 
-    @command()
-    async def top(self, ctx: Context, page: int = 1) -> None:
+    @command(aliases=("top",))
+    async def leaderboard(self, ctx: Context, page: int = 1) -> None:
         """View the activity competition leaderboard."""
         now = datetime.now()
         members = await self.get_top_members(page)
@@ -62,6 +62,53 @@ class Activity(Cog):
         embed.set_image(url=f'attachment://{filename.split("/")[-1]}')
 
         await ctx.send(embed=embed, file=discord.File(filename))
+
+    @command()
+    async def redeem(self, ctx: Context, code: str) -> None:
+        """Give or take a certain number of points from a user."""
+        if ctx.guild is not None:
+            await ctx.message.delete()
+            await ctx.send(
+                (
+                    f"{ctx.author.mention} Your message was deleted! "
+                    "This command can only be used in DMs. Don't leak the codes..."
+                )
+            )
+            return
+
+        async with self.bot.pg_pool.acquire() as conn:
+            async with conn.transaction():
+                db_user = await conn.fetchrow("SELECT * FROM Users WHERE user_id = $1", ctx.author.id)
+
+                if not db_user:
+                    await ctx.send("You are not registered for the hackathon!")
+                    return
+
+                db_code = await conn.fetchrow("SELECT * FROM Codes WHERE code = $1", code)
+
+                if code in db_user["special_codes"]:
+                    await ctx.send(
+                        (
+                            f"You have already redeemed points for the activity \"{db_code['title']}\"."
+                            "Try something else!"
+                        )
+                    )
+                    return
+
+                if not db_code:
+                    await ctx.send(f"Activity code '{code}' not found! Are you sure it is correct?")
+                    return
+
+                await conn.execute(
+                    "UPDATE Users SET points=$2, special_codes = array_append(special_codes, $3) WHERE id=$1",
+                    db_user["id"],
+                    db_user["points"] + db_code["points"],
+                    db_code["code"],
+                )
+
+        await ctx.send(
+            f"{ctx.author.mention} redeemed {db_code['points']} points for \"{db_code['title']}\"!"
+        )
 
     @command()
     async def give(
@@ -110,7 +157,7 @@ class Activity(Cog):
         await self.give(ctx, points * -1, users, remaining=remaining)
 
     @command()
-    async def registerall(self, ctx: Context, fill_random: bool = False) -> None:
+    async def register_all(self, ctx: Context, fill_random: bool = False) -> None:
         """Reset and register all @hacker for the activity competition."""
         users = await self.populate_db(fill_random)
 
@@ -179,7 +226,7 @@ class Activity(Cog):
         async with self.bot.pg_pool.acquire() as conn:
             async with conn.transaction():
                 hackers = await conn.fetch(
-                    "SELECT * FROM Users ORDER BY points DESC LIMIT 10 OFFSET $1",
+                    "SELECT * FROM Users ORDER BY points DESC, user_id DESC LIMIT 10 OFFSET $1",
                     page_offset,
                 )
 
