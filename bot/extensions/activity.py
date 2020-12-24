@@ -114,7 +114,7 @@ class Activity(Cog):
     async def give(
         self, ctx: Context, points: int, users: Greedy[discord.User], *, remaining: str = ""
     ) -> None:
-        """Give or take a certain number of points from a user."""
+        """Give a certain number of points from a user."""
         if remaining:
             await ctx.send(f"[warning] the following was ignored: '{remaining}'")
 
@@ -153,7 +153,7 @@ class Activity(Cog):
     async def take(
         self, ctx: Context, points: int, users: Greedy[discord.User], *, remaining: str = ""
     ) -> None:
-        """Give or take a certain number of points from a user."""
+        """Take a certain number of points from a user."""
         await self.give(ctx, points * -1, users, remaining=remaining)
 
     @command()
