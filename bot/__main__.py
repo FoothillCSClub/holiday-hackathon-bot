@@ -11,10 +11,12 @@ time.tzset()
 
 intents = Intents.default()
 intents.members = True
+prefix = getenv("BOT_PREFIX", default="hack ")
 
 bot = HolidayBot(
-    command_prefix=getenv("BOT_PREFIX", default="hack "),
-    case_insensitive=False,
+    # NOTE: this assumes the prefix is a word
+    command_prefix=(prefix[0].lower() + prefix[1:], prefix[0].upper() + prefix[1:]),
+    case_insensitive=True,
     intents=intents,
 )
 
