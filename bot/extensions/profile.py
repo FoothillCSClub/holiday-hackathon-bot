@@ -31,18 +31,18 @@ class Profile(Cog):
         member = host_guild.get_member(user.id)
 
         if not member:
-            await ctx.send('User not found!')
+            await ctx.send("User not found!")
             return
 
         user_data, codes = await self.get_member_data(member)
 
         if not user_data:
-            await ctx.send(f'{user.mention} is not registered for the hackathon!')
+            await ctx.send(f"{user.mention} is not registered for the hackathon!")
             return
 
         filename = self.render_profile_image(member, user_data, codes)
 
-        await ctx.send('**Your hacker profile**', file=File(filename))
+        await ctx.send("**Your hacker profile**", file=File(filename))
 
     async def get_member_data(self, member: Member) -> Tuple[Record, List[Record]]:
         """Get activity data for a user."""
@@ -52,7 +52,8 @@ class Profile(Cog):
                 SELECT points
                 FROM Users
                 WHERE user_id = $1
-                """, member.id
+                """,
+                member.id,
             )
             # NOTE: For now, we don't fetch the codes
             # because 'recent activity' list is not currently shown
@@ -85,18 +86,12 @@ class Profile(Cog):
             member.display_name,
             font=BOLD_LARGE,
             fill=(20, 20, 20),
-            anchor='ma'
+            anchor="ma",
         )
 
         # Username, if different from display name
         if has_display_name:
-            draw.text(
-                (width / 2, 120),
-                '@' + member.name,
-                font=REGULAR,
-                fill=(50, 50, 50),
-                anchor='ma'
-            )
+            draw.text((width / 2, 120), "@" + member.name, font=REGULAR, fill=(50, 50, 50), anchor="ma")
 
         # Points
         draw.text(
@@ -104,7 +99,7 @@ class Profile(Cog):
             f"{user['points'] or 'No'} points{' yet' if not user['points'] else ''}",
             font=BOLD,
             fill=(20, 20, 20),
-            anchor='ma'
+            anchor="ma",
         )
 
         del draw
