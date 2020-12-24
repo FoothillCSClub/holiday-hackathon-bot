@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS Users(
 );
 
 CREATE TABLE IF NOT EXISTS Codes(
-    id serial PRIMARY KEY,
-    code TEXT
+    code TEXT PRIMARY KEY,
+    title TEXT,
+    points INT
 );

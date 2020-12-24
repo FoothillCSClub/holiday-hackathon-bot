@@ -13,6 +13,9 @@ services:
     expose:
       - 5432
 
+    ports:
+      - "5432:5432"
+
     volumes:
       - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
       - ${POSTGRES_STORAGE_DIR}:/var/lib/postgresql/data/:rw
@@ -42,6 +45,3 @@ services:
     volumes:
        - ./logs:/holiday-hackathon-bot/logs:rw
        - .:/holiday-hackathon-bot:ro
-
-    ports:
-      - "5005:5000"

@@ -9,6 +9,7 @@ class Data(Cog):
     # TODO: graceful exception handling?
     DEVS = [int(elem.strip()) for elem in os.environ.get("BOT_DEVS").split(",")]
     HOST_GUILD = int(os.environ.get("BOT_HOST_GUILD"))
+    ACTIVITY_CODES_CSV = os.environ.get("ACTIVITY_CODES_CSV", "postgres/sample_codes.csv")
     PRESENCE_TEXT = "https://holiday.foothillcs.club"
     WEBSITE_URL = "https://holiday.foothillcs.club"
     WEBSITE_SCHEDULE_URL = "https://holiday.foothillcs.club#schedule"

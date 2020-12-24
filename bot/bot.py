@@ -19,16 +19,14 @@ class HolidayBot(Bot):
 
         self.loop = asyncio.get_event_loop()
         self.http_session = aiohttp.ClientSession()
-
-    async def start(self, *args, **kwargs) -> None:
-        """Initialize the postgres connection pool and start the bot."""
-        self.pg_pool = await create_pool(
-            host="postgres",
-            database=environ["POSTGRES_DB"],
-            user=environ["POSTGRES_USER"],
-            password=environ["POSTGRES_PASSWORD"],
+        self.pg_pool = self.loop.run_until_complete(
+            create_pool(
+                host="postgres",
+                database=environ["POSTGRES_DB"],
+                user=environ["POSTGRES_USER"],
+                password=environ["POSTGRES_PASSWORD"],
+            )
         )
-        await super().start(*args, **kwargs)
 
     @staticmethod
     async def on_ready() -> None:

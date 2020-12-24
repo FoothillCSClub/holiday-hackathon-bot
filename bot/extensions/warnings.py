@@ -43,9 +43,9 @@ class Warnings(Cog):
             msg = f"Command not found! Use `{ctx.prefix}help` to list all available commands."
 
         else:
-            msg = f"{type(e).__name__}: {e}"
+            msg = "Oh no! We hit an error."
 
-        traceback.print_exception(type(e), e, e.__traceback__, file=sys.stderr)
+            traceback.print_exception(type(e), e, e.__traceback__, file=sys.stderr)
 
         await ctx.send(msg)
 
