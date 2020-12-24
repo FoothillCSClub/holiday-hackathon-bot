@@ -65,7 +65,7 @@ class Activity(Cog):
     async def populate_db(self) -> List[Record]:
         """Reset & populate the postgres Users table with @hacker members + random scores."""
         guild = self.bot.get_host_guild()
-        role = next((role for role in guild.roles if role.name == "hacker"))
+        role = discord.utils.get(guild.roles, name="hacker")
 
         async with self.bot.pg_pool.acquire() as conn:
             async with conn.transaction():
