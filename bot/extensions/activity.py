@@ -8,7 +8,7 @@ from typing import List
 import discord
 from asyncpg import Record
 from PIL import Image, ImageDraw, ImageFont
-from discord.ext.commands import Cog, Context, check, command
+from discord.ext.commands import Cog, Context, Greedy, check, command
 
 from bot.bot import HolidayBot
 
@@ -34,8 +34,10 @@ class Activity(Cog):
         self.bot = bot
         self.outdir = environ.get("BOT_OUTPUT_DIR") or "output"
 
-        # Decorate .registerall() without a decorator
+        # Decorate mod methods without a decorator
         self.registerall = check(self.bot.is_mod())(self.registerall)
+        self.give = check(self.bot.is_mod())(self.give)
+        self.take = check(self.bot.is_mod())(self.take)
 
         Path(self.outdir).mkdir(parents=True, exist_ok=True)
 
@@ -53,16 +55,63 @@ class Activity(Cog):
         await ctx.send(embed=embed, file=discord.File(filename))
 
     @command()
-    async def registerall(self, ctx: Context) -> None:
+    async def give(
+        self, ctx: Context, points: int, users: Greedy[discord.User], *, remaining: str = ""
+    ) -> None:
+        """Give or take a certain number of points from a user."""
+        if remaining:
+            await ctx.send(f"[warning] the following was ignored: '{remaining}'")
+
+        if len(users) == 0:
+            await ctx.send("At least one user has to be specified!")
+            return
+
+        users_updated = []
+        users_not_registered = []
+
+        async with self.bot.pg_pool.acquire() as conn:
+            async with conn.transaction():
+                for user in users:
+                    db_user = await conn.fetchrow("SELECT * FROM Users WHERE user_id = $1", user.id)
+
+                    if not db_user:
+                        users_not_registered.append(user.mention)
+                        continue
+
+                    await conn.execute(
+                        "UPDATE Users SET points=$2 WHERE id=$1", db_user["id"], db_user["points"] + points
+                    )
+                    users_updated.append(user.mention)
+
+        text = ""
+
+        if len(users_updated):
+            text += f"{' '.join(users_updated)} - got {points} points\n"
+
+        if len(users_not_registered):
+            text += f"{' '.join(users_not_registered)} - not registered for the hackathon!\n"
+
+        await ctx.send(text)
+
+    @command()
+    async def take(
+        self, ctx: Context, points: int, users: Greedy[discord.User], *, remaining: str = ""
+    ) -> None:
+        """Give or take a certain number of points from a user."""
+        await self.give(ctx, points * -1, users, remaining=remaining)
+
+    @command()
+    async def registerall(self, ctx: Context, fill_random: bool = False) -> None:
         """Reset and register all @hacker for the activity competition."""
-        users = await self.populate_db()
+        users = await self.populate_db(fill_random)
 
         text = "Registered & reset: " + " ".join([f"<@{user['user_id']}>" for user in users])
+        text += "\nPopulated random scores" if fill_random else "\nSet all scores to 0\n"
         embed = discord.Embed(title="Hackers", description=text)
 
         await ctx.send(embed=embed)
 
-    async def populate_db(self) -> List[Record]:
+    async def populate_db(self, fill_random: bool) -> List[Record]:
         """Reset & populate the postgres Users table with @hacker members + random scores."""
         guild = self.bot.get_host_guild()
         role = discord.utils.get(guild.roles, name="hacker")
@@ -75,7 +124,7 @@ class Activity(Cog):
                     await conn.execute(
                         "INSERT INTO Users(user_id, points, special_codes) VALUES ($1, $2, $3)",
                         member.id,
-                        randint(0, 200),
+                        randint(0, 200) if fill_random else 0,
                         [],
                     )
 
