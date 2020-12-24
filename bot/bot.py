@@ -1,10 +1,13 @@
 import asyncio
-from os import listdir
+from os import environ, listdir
 from pathlib import Path
-from typing import List
+from typing import Callable, List
 
 import aiohttp
-from discord.ext.commands import Bot, Cog
+import discord
+from asyncpg import create_pool
+from discord import Guild
+from discord.ext.commands import Bot, Cog, Context
 from loguru import logger
 
 
@@ -17,9 +20,15 @@ class HolidayBot(Bot):
         self.loop = asyncio.get_event_loop()
         self.http_session = aiohttp.ClientSession()
 
-    def get_data(self) -> Cog:
-        """Get the data cog."""
-        return self.get_cog("Data")
+    async def start(self, *args, **kwargs) -> None:
+        """Initialize the postgres connection pool and start the bot."""
+        self.pg_pool = await create_pool(
+            host="postgres",
+            database=environ["POSTGRES_DB"],
+            user=environ["POSTGRES_USER"],
+            password=environ["POSTGRES_PASSWORD"],
+        )
+        await super().start(*args, **kwargs)
 
     @staticmethod
     async def on_ready() -> None:
@@ -43,3 +52,23 @@ class HolidayBot(Bot):
         ]
 
         return exts
+
+    def get_data(self) -> Cog:
+        """Get the data cog."""
+        return self.get_cog("Data")
+
+    def is_mod(self) -> Callable:
+        """Create a mod-checking discord command check."""
+        async def predicate(ctx: Context) -> bool:
+            """Check if the user is a mod in the event host guild."""
+            host_guild = self.get_host_guild()
+            user = host_guild.get_member(ctx.author.id)
+            role = discord.utils.get(host_guild.roles, name="mod")
+
+            return True if user and role in user.roles else False
+
+        return predicate
+
+    def get_host_guild(self) -> Guild:
+        """Get the event host guild."""
+        return self.get_guild(self.get_data().HOST_GUILD)

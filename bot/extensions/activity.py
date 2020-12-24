@@ -6,8 +6,9 @@ from random import randint
 from typing import List
 
 import discord
+from asyncpg import Record
 from PIL import Image, ImageDraw, ImageFont
-from discord.ext.commands import Cog, Context, command
+from discord.ext.commands import Cog, Context, check, command
 
 from bot.bot import HolidayBot
 
@@ -33,14 +34,17 @@ class Activity(Cog):
         self.bot = bot
         self.outdir = environ.get("BOT_OUTPUT_DIR") or "output"
 
+        # Decorate .registerall() without a decorator
+        self.registerall = check(self.bot.is_mod())(self.registerall)
+
         Path(self.outdir).mkdir(parents=True, exist_ok=True)
 
     @command()
     async def top(self, ctx: Context, page: int = 1) -> None:
-        """Renders a leaderboard of all the top points of players."""
+        """View the activity competition leaderboard."""
         now = datetime.now()
-        members = self.get_top_members(page)
-        filename = self.render_top_image(page, members)
+        members = await self.get_top_members(page)
+        filename = self.render_leaderboard_image(page, members)
 
         embed = discord.Embed(title="Activity Challenge", color=discord.Color.from_rgb(161, 219, 236))
         embed.set_footer(text=now.strftime("Updated at %b %d, %I:%M %p PST"))
@@ -48,31 +52,71 @@ class Activity(Cog):
 
         await ctx.send(embed=embed, file=discord.File(filename))
 
-    def get_top_members(self, page: int) -> List[RankedMember]:
-        """Gets the top members from the leaderboard."""
-        # TODO: cleanup method
-        guild = self.bot.get_guild(self.bot.get_data().HOST_GUILD)
+    @command()
+    async def registerall(self, ctx: Context) -> None:
+        """Reset and register all @hacker for the activity competition."""
+        users = await self.populate_db()
+
+        text = "Registered & reset: " + " ".join([f"<@{user['user_id']}>" for user in users])
+        embed = discord.Embed(title="Hackers", description=text)
+
+        await ctx.send(embed=embed)
+
+    async def populate_db(self) -> List[Record]:
+        """Reset & populate the postgres Users table with @hacker members + random scores."""
+        guild = self.bot.get_host_guild()
         role = next((role for role in guild.roles if role.name == "hacker"))
-        hackers = [(hacker, randint(0, 200)) for hacker in role.members]
+
+        # Take a connection from the pool.
+        async with self.bot.pg_pool.acquire() as conn:
+            async with conn.transaction():
+                # Run the query passing the request argument.
+                await conn.execute("DELETE FROM Users")
+
+                for member in role.members:
+                    await conn.execute(
+                        "INSERT INTO Users(user_id, points, special_codes) VALUES ($1, $2, $3)",
+                        member.id,
+                        randint(0, 200),
+                        [],
+                    )
+
+            async with conn.transaction():
+                users = await conn.fetch("SELECT * FROM Users")
+                return users
+
+    async def get_top_members(self, page: int) -> List[RankedMember]:
+        """Get top 10 members on page X of the leaderboard."""
+        guild = self.bot.get_host_guild()
+
+        page_idx = page - 1
+        page_offset = page_idx * 10
+
+        async with self.bot.pg_pool.acquire() as conn:
+            async with conn.transaction():
+                hackers = await conn.fetch(
+                    "SELECT * FROM Users ORDER BY points DESC LIMIT 10 OFFSET $1",
+                    page_offset,
+                )
+
+        # Tuples of (rank, DB user, and Discord Guild Member)
+        hacker_data = [
+            (page_offset + i + 1, hacker, guild.get_member(hacker["user_id"]))
+            for i, hacker in enumerate(hackers)
+        ]
 
         return [
             RankedMember(
-                rank=((page - 1) * 10) + i + 1,
-                username=hacker[0].name,
-                display_name=hacker[0].display_name,
-                score=hacker[1],
+                rank=rank,
+                username=member.name,
+                display_name=member.display_name,
+                score=db_user["points"],
             )
-            for i, hacker in enumerate(
-                sorted(
-                    hackers[(page - 1) * 10 : page * 10],
-                    key=lambda data: data[1],
-                    reverse=True,
-                )
-            )
+            for rank, db_user, member in hacker_data
         ]
 
-    def render_top_image(self, page: int, members: List[RankedMember]) -> str:
-        """Renders the top image."""
+    def render_leaderboard_image(self, page: int, members: List[RankedMember]) -> str:
+        """Renders the leaderboard image."""
         height = 600
         width = 580
         outfile = f"{self.outdir}/activity_top_{page}.png"
