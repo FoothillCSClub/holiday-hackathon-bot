@@ -1,2 +1,8 @@
+[project]
+license = "MIT"
+readme = "README.md"
+python = "^3.8"
+
 [tool.black]
-skip-string-normalization=1
+line-length = 110
+target_version = ['py38']

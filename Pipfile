@@ -5,9 +5,9 @@ verify_ssl = true
 
 [packages]
 "discord.py" = "~=1.5.1"
-fuzzywuzzy = "~=0.18.0"
 asyncpg = "~=0.21.0"
 pillow = "~=8.0.1"
+loguru = "~=0.5.3"
 
 [dev-packages]
 flake8 = "~=3.8.4"
@@ -29,6 +29,8 @@ python_version = "3.8.6"
 start = "python -m bot"
 lint = "pre-commit run --all-files"
 precommit = "pre-commit install"
+black = "black --check ."
+flake8 = "python -m flake8"
 
 [pipenv]
 allow_prereleases = true
