@@ -13,6 +13,7 @@ class Admin(Cog):
     def __init__(self, bot: HolidayBot) -> None:
         self.bot = bot
 
+    @Cog.listener()
     async def on_ready(self) -> None:
         """Changes presence when the bot is ready to be used."""
         await self.bot.change_presence(
