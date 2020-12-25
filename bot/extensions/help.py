@@ -19,7 +19,7 @@ class Help(Cog):
         moderator = await self.bot.is_mod()(ctx)
 
         for cmd in self.bot.walk_commands():
-            if ((cmd.hidden or not cmd.enabled) and not moderator) or cmd.qualified_name == 'help':
+            if ((cmd.hidden or not cmd.enabled) and not moderator) or cmd.qualified_name == "help":
                 continue
 
             embed.add_field(
