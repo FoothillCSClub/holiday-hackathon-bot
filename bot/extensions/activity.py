@@ -58,7 +58,7 @@ class Activity(Cog):
         members = await self.get_top_members(page)
         filename = self.render_leaderboard_image(page, members)
 
-        embed = discord.Embed(title="Activity Challenge", color=discord.Color.from_rgb(161, 219, 236))
+        embed = discord.Embed(title="Activity Challenge", color=self.bot.get_data().HACKATHON_BLUE)
         embed.set_footer(text=now.strftime("Updated at %b %d, %I:%M %p PST"))
         embed.set_image(url=f'attachment://{filename.split("/")[-1]}')
 
@@ -191,7 +191,7 @@ class Activity(Cog):
         embed = discord.Embed(
             title="Activity Codes",
             description="\n".join([f"`{code}` {title} - {points}" for code, title, points in codes]),
-            color=discord.Color.from_rgb(161, 219, 236),
+            color=self.bot.get_data().HACKATHON_BLUE,
         )
 
         await ctx.author.send(embed=embed)
