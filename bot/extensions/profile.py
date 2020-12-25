@@ -27,9 +27,9 @@ class Profile(Cog):
         Path(self.outdir).mkdir(parents=True, exist_ok=True)
 
     @command()
-    async def profile(self, ctx: Context, user: Optional[User], *, flags: str = '') -> None:
+    async def profile(self, ctx: Context, user: Optional[User], *, flags: str = "") -> None:
         """View your profile."""
-        flags = flags.split(' ')
+        flags = flags.split(" ")
         user = user or ctx.author
         host_guild = self.bot.get_host_guild()
         member = host_guild.get_member(user.id)
@@ -93,8 +93,8 @@ class Profile(Cog):
         self, member: Member, user: Record, codes: List[Record], flags: List[str]
     ) -> str:
         """Renders the profile image."""
-        animated = 'static' not in flags
-        center = 'left' not in flags
+        animated = "static" not in flags
+        center = "left" not in flags
 
         outfile = f"{self.outdir}/profile_{member.name}.{'gif' if animated else 'png'}"
 
