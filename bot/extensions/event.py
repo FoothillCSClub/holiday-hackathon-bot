@@ -29,7 +29,7 @@ class Event(Cog):
 
         embed = discord.Embed(
             title="Event Schedule",
-            color=discord.Color.from_rgb(161, 219, 236),
+            color=self.bot.get_data().HACKATHON_BLUE,
             url=self.bot.get_data().WEBSITE_SCHEDULE_URL,
         )
 
