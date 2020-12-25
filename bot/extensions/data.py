@@ -15,6 +15,7 @@ class Data(Cog):
     WEBSITE_URL = "https://holiday.foothillcs.club"
     WEBSITE_SCHEDULE_URL = "https://holiday.foothillcs.club#schedule"
     API_SCHEDULE_URL = "https://holiday.foothillcs.club/api/schedule.json"
+    GCAL_LINK = "https://calendar.google.com/calendar/embed?src=fp5hg8aq83k3ic6cgumncc9ivs%40group.calendar.google.com&ctz=America%2FLos_Angeles"
 
     HACKATHON_BLUE = Color.from_rgb(161, 219, 236)
     ZERO_WIDTH_CHAR = "​"

@@ -14,7 +14,7 @@ class Help(Cog):
 
     @command(name="help", aliases=("modhelp",))
     async def help_command(self, ctx: Context) -> None:
-        """Getting help for a user."""
+        """Get help for using the bot."""
         moderator = await self.bot.is_mod()(ctx)
         embed = (
             Embed(
