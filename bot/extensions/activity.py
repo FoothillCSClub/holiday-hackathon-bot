@@ -77,6 +77,8 @@ class Activity(Cog):
             )
             return
 
+        code = code.upper()
+
         async with self.bot.pg_pool.acquire() as conn:
             async with conn.transaction():
                 db_user = await conn.fetchrow("SELECT * FROM Users WHERE user_id = $1", ctx.author.id)
@@ -101,8 +103,13 @@ class Activity(Cog):
                     return
 
                 await conn.execute(
-                    "UPDATE Users SET points=$2, special_codes = array_append(special_codes, $3) WHERE id=$1",
-                    db_user["id"],
+                    """
+                    UPDATE Users
+                    SET points=$2,
+                        special_codes = array_append(special_codes, $3)
+                    WHERE user_id=$1
+                    """,
+                    db_user["user_id"],
                     db_user["points"] + db_code["points"],
                     db_code["code"],
                 )
@@ -115,7 +122,7 @@ class Activity(Cog):
     async def give(
         self, ctx: Context, points: int, users: Greedy[discord.User], *, remaining: str = ""
     ) -> None:
-        """Give a certain number of points from a user."""
+        """Give a certain number of points to a user."""
         if remaining:
             await ctx.send(f"[warning] the following was ignored: '{remaining}'")
 
