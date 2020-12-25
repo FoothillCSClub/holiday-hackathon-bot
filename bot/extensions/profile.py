@@ -104,11 +104,13 @@ class Profile(Cog):
 
         if center:
             has_display_name = member.name != member.display_name
+            text_padding = 12
 
             # Display name
+            display_name, _ = get_max_str(BOLD_LARGEST, member.display_name, width - (text_padding * 2))
             draw.text(
                 (width / 2, 70 if has_display_name else 80),
-                member.display_name,
+                display_name,
                 font=BOLD_LARGEST,
                 fill=(20, 20, 20),
                 anchor="ma",
@@ -116,7 +118,8 @@ class Profile(Cog):
 
             # Username, if different from display name
             if has_display_name:
-                draw.text((width / 2, 120), f"@{member.name}", font=REGULAR, fill=(50, 50, 50), anchor="ma")
+                username_str, _ = get_max_str(REGULAR, f"@{member.name}", width - (text_padding * 2))
+                draw.text((width / 2, 120), username_str, font=REGULAR, fill=(50, 50, 50), anchor="ma")
 
             # Points & rank
             draw.text(
@@ -129,7 +132,7 @@ class Profile(Cog):
 
         else:
             # Display name
-            display_name, _ = get_max_str(BOLD_LARGE, member.display_name, width - 20 - 60)
+            display_name, _ = get_max_str(BOLD_LARGE, member.display_name, width - 20 - 70)
             draw.text((20, 110), display_name, font=BOLD_LARGE, fill=(20, 20, 20), anchor="ls")
             # Rank
             draw.text((width - 20, 110), f"#{user['rank']}", font=BOLD, fill=(50, 50, 50), anchor="rs")
