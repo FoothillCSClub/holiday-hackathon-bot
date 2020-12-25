@@ -13,6 +13,7 @@ from discord.ext.commands import Cog, Context, Greedy, check, command
 from discord.ext.tasks import loop
 
 from bot.bot import HolidayBot
+from bot.utils import get_max_str
 
 REGULAR = ImageFont.truetype("assets/fonts/Nunito/Nunito-Regular.ttf", 24)
 BOLD = ImageFont.truetype("assets/fonts/Nunito/Nunito-Bold.ttf", 24)
@@ -135,7 +136,13 @@ class Activity(Cog):
                         continue
 
                     await conn.execute(
-                        "UPDATE Users SET points=$2 WHERE id=$1", db_user["id"], db_user["points"] + points
+                        """
+                        UPDATE Users
+                        SET points = points + $2
+                        WHERE user_id=$1
+                        """,
+                        user.id,
+                        points,
                     )
                     users_updated.append(user.mention)
 
@@ -288,21 +295,23 @@ class Activity(Cog):
 
             # Show display name (or username, if default)
             name_x = content_padding + 58
+            content_width = width - name_x - content_padding - 58
+
+            display_name, display_name_length = get_max_str(EXTRABOLD, person.display_name, content_width)
             draw.text(
                 (name_x, content_y),
-                person.display_name,
+                display_name,
                 font=EXTRABOLD,
             )
 
             # Show username, if different from display name
             if person.username != person.display_name:
-                length = draw.textlength(
-                    person.display_name,
-                    font=EXTRABOLD,
+                username, _ = get_max_str(
+                    REGULAR, f"@{person.username}", content_width - display_name_length - 8
                 )
                 draw.text(
-                    (name_x + length + 8, content_y),
-                    f"@{person.username}",
+                    (name_x + display_name_length + 8, content_y),
+                    username,
                     font=REGULAR,
                 )
 
