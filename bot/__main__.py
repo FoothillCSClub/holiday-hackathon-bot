@@ -18,6 +18,7 @@ bot = HolidayBot(
     command_prefix=(prefix[0].lower() + prefix[1:], prefix[0].upper() + prefix[1:]),
     case_insensitive=True,
     intents=intents,
+    help_command=None,
 )
 
 for extension in bot.get_extensions():

@@ -58,7 +58,7 @@ class Activity(Cog):
         members = await self.get_top_members(page)
         filename = self.render_leaderboard_image(page, members)
 
-        embed = discord.Embed(title="Activity Challenge", color=discord.Color.from_rgb(161, 219, 236))
+        embed = discord.Embed(title="Activity Challenge", color=self.bot.get_data().HACKATHON_BLUE)
         embed.set_footer(text=now.strftime("Updated at %b %d, %I:%M %p PST"))
         embed.set_image(url=f'attachment://{filename.split("/")[-1]}')
 
@@ -118,7 +118,7 @@ class Activity(Cog):
             f"{ctx.author.mention} redeemed {db_code['points']} points for \"{db_code['title']}\"!"
         )
 
-    @command()
+    @command(hidden=True)
     async def give(
         self, ctx: Context, points: int, users: Greedy[discord.User], *, remaining: str = ""
     ) -> None:
@@ -163,14 +163,14 @@ class Activity(Cog):
 
         await ctx.send(text)
 
-    @command()
+    @command(hidden=True)
     async def take(
         self, ctx: Context, points: int, users: Greedy[discord.User], *, remaining: str = ""
     ) -> None:
         """Take a certain number of points from a user."""
         await self.give(ctx, points * -1, users, remaining=remaining)
 
-    @command()
+    @command(hidden=True)
     async def register_all(self, ctx: Context, fill_random: bool = False) -> None:
         """Reset and register all @hacker for the activity competition."""
         users = await self.populate_db(fill_random)
@@ -181,7 +181,7 @@ class Activity(Cog):
 
         await ctx.send(embed=embed)
 
-    @command()
+    @command(hidden=True)
     async def codes(self, ctx: Context) -> None:
         """List all activity codes."""
         async with self.bot.pg_pool.acquire() as conn:
@@ -191,7 +191,7 @@ class Activity(Cog):
         embed = discord.Embed(
             title="Activity Codes",
             description="\n".join([f"`{code}` {title} - {points}" for code, title, points in codes]),
-            color=discord.Color.from_rgb(161, 219, 236),
+            color=self.bot.get_data().HACKATHON_BLUE,
         )
 
         await ctx.author.send(embed=embed)

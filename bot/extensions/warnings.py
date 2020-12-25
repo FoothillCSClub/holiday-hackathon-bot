@@ -25,7 +25,7 @@ class Warnings(Cog):
             msg = "Command not currently enabled."
 
         elif isinstance(e, commands.UserInputError):
-            msg = f"Command received bad argument: {e}."
+            msg = f"You didn't type the command properly: {e}"
 
         elif isinstance(e, commands.NotOwner):
             msg = "You do not have enough permissions for this command."

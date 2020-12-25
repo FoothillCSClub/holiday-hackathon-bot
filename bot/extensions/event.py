@@ -22,19 +22,24 @@ class Event(Cog):
 
     @command()
     async def schedule(self, ctx: Context) -> None:
-        """Gets the schedule from the hackathon website."""
+        """Check the hackathon event schedule."""
         if not self.event_data:
             await ctx.send("I'm still fetching the event data. Try again in a few seconds!")
             return
 
-        embed = discord.Embed(
-            title="Event Schedule",
-            color=discord.Color.from_rgb(161, 219, 236),
-            url=self.bot.get_data().WEBSITE_SCHEDULE_URL,
-        )
-
         formatted_time = self.update_time.strftime("Updated at %b %d, %I:%M %p PST")
-        embed.set_footer(text=f"{formatted_time} | More at {self.bot.get_data().WEBSITE_URL}")
+        embed = (
+            discord.Embed(
+                title="Hackathon Event Schedule",
+                description=(
+                    f"- **[See more at our website]({self.bot.get_data().WEBSITE_SCHEDULE_URL})**\n"
+                    f"- **[Add the Google Calendar]({self.bot.get_data().GCAL_LINK})**"
+                ),
+                color=self.bot.get_data().HACKATHON_BLUE,
+            )
+            .set_author(name=self.bot.get_host_guild().name, icon_url=self.bot.get_host_guild().icon_url)
+            .set_footer(text=f"{formatted_time} | More at {self.bot.get_data().WEBSITE_URL}")
+        )
 
         for day_info in self.event_data["schedule"]:
             events_text = ""

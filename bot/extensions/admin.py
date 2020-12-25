@@ -7,7 +7,7 @@ from loguru import logger
 from bot.bot import HolidayBot
 
 
-class Admin(Cog):
+class Admin(Cog, command_attrs=dict(hidden=True)):
     """Admin utilities cog."""
 
     def __init__(self, bot: HolidayBot) -> None:
