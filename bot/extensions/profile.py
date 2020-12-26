@@ -4,7 +4,7 @@ from typing import List, Optional, Tuple
 from random import randint
 
 from asyncpg import Record
-from discord import File, Member, User
+from discord import File, Member, User, utils
 from discord.ext.commands import Cog, Context, command
 from PIL import Image, ImageDraw, ImageFont
 
@@ -32,17 +32,19 @@ class Profile(Cog):
         flags = flags.split(" ")
         user = user or ctx.author
         host_guild = self.bot.get_host_guild()
+        hacker_role = utils.get(host_guild.roles, name="hacker")
         member = host_guild.get_member(user.id)
 
         if not member:
             await ctx.send("User not found!")
             return
 
-        user_data, codes = await self.get_member_data(member)
-
-        if not user_data:
+        if hacker_role not in member.roles:
             await ctx.send(f"{user.mention} is not registered for the hackathon!")
             return
+
+        # Note: user_data may be None
+        user_data, codes = await self.get_member_data(member)
 
         filename = self.render_profile_image(
             member,
@@ -90,7 +92,7 @@ class Profile(Cog):
         return user, None
 
     def render_profile_image(
-        self, member: Member, user: Record, codes: List[Record], flags: List[str]
+        self, member: Member, user: Optional[Record], codes: List[Record], flags: List[str]
     ) -> str:
         """Renders the profile image."""
         animated = "static" not in flags
@@ -124,7 +126,9 @@ class Profile(Cog):
             # Points & rank
             draw.text(
                 (width / 2, 170 if has_display_name else 150),
-                f"{user['points'] or 'No'} points{' yet' if not user['points'] else ''} · #{user['rank']}",
+                f"{user['points'] or 'No'} points{' yet' if not user['points'] else ''} · #{user['rank']}"
+                if user
+                else "On the @mod team",
                 font=BOLD,
                 fill=(20, 20, 20),
                 anchor="ma",
@@ -135,10 +139,16 @@ class Profile(Cog):
             display_name, _ = get_max_str(BOLD_LARGE, member.display_name, width - 20 - 70)
             draw.text((20, 110), display_name, font=BOLD_LARGE, fill=(20, 20, 20), anchor="ls")
             # Rank
-            draw.text((width - 20, 110), f"#{user['rank']}", font=BOLD, fill=(50, 50, 50), anchor="rs")
+            draw.text(
+                (width - 20, 110),
+                f"#{user['rank']}" if user else "N/A",
+                font=BOLD,
+                fill=(50, 50, 50),
+                anchor="rs",
+            )
 
             # Points
-            points_str = f"{user['points'] or 'No'} points"
+            points_str = f"{user['points'] or 'No'} points" if user else "On the @mod team"
             points_str_len = REGULAR.getlength(points_str)
             draw.text(
                 (width - 20, 140),

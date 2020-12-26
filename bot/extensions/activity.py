@@ -39,6 +39,8 @@ class Activity(Cog):
 
         # Decorate mod methods without a decorator
         self.register_all = check(self.bot.is_mod())(self.register_all)
+        self.register = check(self.bot.is_mod())(self.register)
+        self.unregister = check(self.bot.is_mod())(self.unregister)
         self.give = check(self.bot.is_mod())(self.give)
         self.take = check(self.bot.is_mod())(self.take)
         self.codes = check(self.bot.is_mod())(self.codes)
@@ -170,6 +172,62 @@ class Activity(Cog):
         """Take a certain number of points from a user."""
         await self.give(ctx, points * -1, users, remaining=remaining)
 
+    @command()
+    async def register(self, ctx: Context, user: discord.User) -> None:
+        """Register a user for the hackathon."""
+        host_guild = self.bot.get_host_guild()
+        member = host_guild.get_member(user.id)
+        hacker_role = discord.utils.get(host_guild.roles, name="hacker")
+        mod_role = discord.utils.get(host_guild.roles, name="mod")
+
+        if not member:
+            await ctx.send("User not found!")
+            return
+
+        # make the user a @hacker
+        await member.add_roles(hacker_role)
+
+        # if not a @mod, add to the activity competition
+        if mod_role not in member.roles:
+            async with self.bot.pg_pool.acquire() as conn:
+                db_user = await conn.fetchrow(
+                    "SELECT points FROM Users WHERE user_id = $1",
+                    member.id,
+                )
+
+                if not db_user:
+                    await conn.execute(
+                        "INSERT INTO Users(user_id, points, special_codes) VALUES ($1, $2, $3)",
+                        member.id,
+                        0,
+                        [],
+                    )
+
+        await ctx.send(
+            f'{member.mention} is now a hacker! Profile @ "{ctx.prefix} profile {member.mention}".'
+        )
+
+    @command()
+    async def unregister(self, ctx: Context, user: discord.User) -> None:
+        """Unregister a user from the hackathon."""
+        host_guild = self.bot.get_host_guild()
+        member = host_guild.get_member(user.id)
+        hacker_role = discord.utils.get(host_guild.roles, name="hacker")
+
+        if not member:
+            await ctx.send("User not found!")
+            return
+
+        await member.remove_roles(hacker_role)
+
+        async with self.bot.pg_pool.acquire() as conn:
+            await conn.execute(
+                "DELETE FROM Users WHERE user_id = $1",
+                member.id,
+            )
+
+        await ctx.send(f"{member.mention} is no longer a hacker :cry:")
+
     @command(hidden=True)
     async def register_all(self, ctx: Context, fill_random: bool = False) -> None:
         """Reset and register all @hacker for the activity competition."""
@@ -212,19 +270,21 @@ class Activity(Cog):
     async def populate_db(self, fill_random: bool) -> List[Record]:
         """Reset & populate the postgres Users table with @hacker members + random scores."""
         guild = self.bot.get_host_guild()
-        role = discord.utils.get(guild.roles, name="hacker")
+        hacker_role = discord.utils.get(guild.roles, name="hacker")
+        mod_role = discord.utils.get(guild.roles, name="mod")
 
         async with self.bot.pg_pool.acquire() as conn:
             async with conn.transaction():
                 await conn.execute("DELETE FROM Users")
 
-                for member in role.members:
-                    await conn.execute(
-                        "INSERT INTO Users(user_id, points, special_codes) VALUES ($1, $2, $3)",
-                        member.id,
-                        randint(0, 200) if fill_random else 0,
-                        [],
-                    )
+                for member in hacker_role.members:
+                    if member not in mod_role.members:
+                        await conn.execute(
+                            "INSERT INTO Users(user_id, points, special_codes) VALUES ($1, $2, $3)",
+                            member.id,
+                            randint(0, 200) if fill_random else 0,
+                            [],
+                        )
 
             async with conn.transaction():
                 users = await conn.fetch("SELECT * FROM Users")
