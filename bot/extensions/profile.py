@@ -4,7 +4,7 @@ from typing import List, Optional, Tuple
 from random import randint
 
 from asyncpg import Record
-from discord import File, Member, User, utils
+from discord import File, Member, User
 from discord.ext.commands import Cog, Context, command
 from PIL import Image, ImageDraw, ImageFont
 
