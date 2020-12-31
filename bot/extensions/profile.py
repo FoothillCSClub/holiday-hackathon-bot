@@ -32,7 +32,7 @@ class Profile(Cog):
         flags = flags.split(" ")
         user = user or ctx.author
         host_guild = self.bot.get_host_guild()
-        hacker_role = utils.get(host_guild.roles, name="hacker")
+        hacker_role = self.bot.get_hacker_role()
         member = host_guild.get_member(user.id)
 
         if not member:

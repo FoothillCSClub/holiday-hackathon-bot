@@ -6,7 +6,7 @@ from typing import Callable, List
 import aiohttp
 import discord
 from asyncpg import create_pool
-from discord import Guild
+from discord import Guild, Role
 from discord.ext.commands import Bot, Cog, Context
 from loguru import logger
 
@@ -61,8 +61,8 @@ class HolidayBot(Bot):
         async def predicate(ctx: Context) -> bool:
             """Check if the user is a mod in the event host guild."""
             host_guild = self.get_host_guild()
+            role = self.get_mod_role()
             user = host_guild.get_member(ctx.author.id)
-            role = discord.utils.get(host_guild.roles, name="mod")
 
             return True if user and role in user.roles else False
 
@@ -71,3 +71,11 @@ class HolidayBot(Bot):
     def get_host_guild(self) -> Guild:
         """Get the event host guild."""
         return self.get_guild(self.get_data().HOST_GUILD)
+
+    def get_mod_role(self) -> Role:
+        """Get all hackers."""
+        return discord.utils.get(self.get_host_guild().roles, name=self.get_data().MOD_ROLE_NAME)
+
+    def get_hacker_role(self) -> Role:
+        """Get all hackers."""
+        return discord.utils.get(self.get_host_guild().roles, name=self.get_data().HACKER_ROLE_NAME)

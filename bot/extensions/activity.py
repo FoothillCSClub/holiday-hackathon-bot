@@ -176,9 +176,9 @@ class Activity(Cog):
     async def register(self, ctx: Context, user: discord.User) -> None:
         """Register a user for the hackathon."""
         host_guild = self.bot.get_host_guild()
+        hacker_role = self.bot.get_hacker_role()
+        mod_role = self.bot.get_mod_role()
         member = host_guild.get_member(user.id)
-        hacker_role = discord.utils.get(host_guild.roles, name="hacker")
-        mod_role = discord.utils.get(host_guild.roles, name="mod")
 
         if not member:
             await ctx.send("User not found!")
@@ -211,8 +211,8 @@ class Activity(Cog):
     async def unregister(self, ctx: Context, user: discord.User) -> None:
         """Unregister a user from the hackathon."""
         host_guild = self.bot.get_host_guild()
+        hacker_role = self.bot.get_hacker_role()
         member = host_guild.get_member(user.id)
-        hacker_role = discord.utils.get(host_guild.roles, name="hacker")
 
         if not member:
             await ctx.send("User not found!")
@@ -269,9 +269,8 @@ class Activity(Cog):
 
     async def populate_db(self, fill_random: bool) -> List[Record]:
         """Reset & populate the postgres Users table with @hacker members + random scores."""
-        guild = self.bot.get_host_guild()
-        hacker_role = discord.utils.get(guild.roles, name="hacker")
-        mod_role = discord.utils.get(guild.roles, name="mod")
+        hacker_role = self.bot.get_hacker_role()
+        mod_role = self.bot.get_mod_role()
 
         async with self.bot.pg_pool.acquire() as conn:
             async with conn.transaction():

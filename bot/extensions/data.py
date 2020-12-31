@@ -10,6 +10,8 @@ class Data(Cog):
     # TODO: graceful exception handling?
     DEVS = [int(elem.strip()) for elem in os.environ.get("BOT_DEVS").split(",")]
     HOST_GUILD = int(os.environ.get("BOT_HOST_GUILD"))
+    HACKER_ROLE_NAME = os.environ.get("BOT_HACKER_ROLE_NAME")
+    MOD_ROLE_NAME = os.environ.get("BOT_MOD_ROLE_NAME")
     ACTIVITY_CODES_CSV = os.environ.get("ACTIVITY_CODES_CSV", "postgres/sample_codes.csv")
     PRESENCE_TEXT = "hack help | https://holiday.foothillcs.club"
     WEBSITE_URL = "https://holiday.foothillcs.club"
