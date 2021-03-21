@@ -312,8 +312,8 @@ class Activity(Cog):
         return [
             RankedMember(
                 rank=rank,
-                username=member.name,
-                display_name=member.display_name,
+                username=member.name if member else str(db_user["user_id"]),
+                display_name=member.display_name if member else str(db_user["user_id"]),
                 score=db_user["points"],
             )
             for rank, db_user, member in hacker_data
