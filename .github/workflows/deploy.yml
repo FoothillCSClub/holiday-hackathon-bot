@@ -23,7 +23,7 @@ jobs:
         run: exit 1
 
       - name: Deploy on SSH server
-        uses: appleboy/ssh-action@v0.1
+        uses: appleboy/ssh-action@v0.1.4
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
