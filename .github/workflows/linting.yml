@@ -3,12 +3,11 @@ name: Linting
 on: [push]
 
 jobs:
-  build:
-
+  lint:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checks out repository so workflows can access it
+      - name: Checkout repository
         uses: actions/checkout@v2
 
       - name: Set up Python 3.8
