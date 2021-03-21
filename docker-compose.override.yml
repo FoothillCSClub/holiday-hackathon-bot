@@ -1,0 +1,14 @@
+version: "3.7"
+
+services:
+  postgres:
+    ports:
+      - "5432:5432"
+
+  holiday-hackathon-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    volumes:
+      - .:/holiday-hackathon-bot:ro

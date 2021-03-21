@@ -1,0 +1,9 @@
+version: "3.7"
+
+services:
+  holiday-hackathon-bot:
+    environment:
+      - ACTIVITY_CODES_CSV=codes.csv
+
+    volumes:
+      - ${ACTIVITY_CODES_CSV:-/dev/null}:/holiday-hackathon-bot/codes.csv:ro
