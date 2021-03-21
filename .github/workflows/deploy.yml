@@ -28,10 +28,11 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_KEY }}
+          script_stop: true
           script: |
             cd /opt/holiday-hackathon-bot
             git checkout .
             git checkout main
             git pull
-            docker-compose -f docker-compose.yml -f docker-compose.prod.yml pull
-            docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+            docker-compose -f docker-compose.yml -f docker-compose.prod.yml pull --quiet
+            docker-compose -f docker-compose.yml -f docker-compose.prod.yml up --detach --quiet-pull
