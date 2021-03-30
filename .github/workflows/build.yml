@@ -6,7 +6,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      IMAGE_NAME: docker.pkg.github.com/foothillcsclub/holiday-hackathon-bot/holiday-hackathon-bot
+      IMAGE_NAME: ghcr.io/foothillcsclub/holiday-hackathon-bot
 
     steps:
       - name: Docker meta
@@ -19,8 +19,8 @@ jobs:
       - name: Login to GitHub Packages Registry
         uses: docker/login-action@v1 
         with:
-          registry: docker.pkg.github.com
-          username: ${{ github.repository_owner }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push
